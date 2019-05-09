@@ -1,5 +1,4 @@
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -16,15 +15,13 @@ public class GmailSendEmail {
     @FindBy(xpath = "//*[contains(@class,'T-I J-J5-Ji T-I-KE L3')]")
     private WebElement buttonSend;
 
-    //@FindBy(xpath = "//*[@id=\":ch\"]")
     @FindBy(css = "[name=to]")
     private WebElement receiverEmailField;
 
-    //@FindBy(xpath = "//*[@id=\":ei\"]")
     @FindBy(css = "[name=subjectbox]")
     private WebElement topicEmailField;
 
-    @FindBy(xpath = "//*[@id=\":9s\"]")
+    @FindBy(xpath = "//*[@class=\"J-J5-Ji btA\"]")
     private WebElement sendButtonInPopup;
 
     @FindBy(xpath = "//*[contains(text(),'Message sent.')]")
@@ -35,6 +32,15 @@ public class GmailSendEmail {
 
     @FindBy(xpath = "//*[@class=\"T-I J-J5-Ji nu T-I-ax7 L3\"]")
     private WebElement refreshButton;
+
+    @FindBy(xpath = "//*[@class=\"TN bzz aHS-bnu\"]")
+    private WebElement sentTab;
+
+    @FindBy(xpath = "//*[@class=\"TN bzz aHS-bnx\"]")
+    private WebElement trashTab;
+
+    @FindBy(xpath = "//div[@act=\"10\"]")
+    private WebElement deleteButton;
 
 
     public GmailSendEmail() {
@@ -53,18 +59,40 @@ public class GmailSendEmail {
         WebDriverWait explicitWait = new WebDriverWait(driver, 10);
         explicitWait.pollingEvery(Duration.ofSeconds(1));
         explicitWait.until(ExpectedConditions.visibilityOf(messageSentTip));
+    }
 
-        GmailLogout a = new GmailLogout();
-        a.logout();
+    private boolean waitAndCheckEmail(String topic) {
+        refreshButton.click();
+
+        String xpath = String.format("//span[contains(text(), '%s')]", topic);
+        By by = By.xpath(xpath);
+        WebElement subjectElement =  waitAndGetElement(by);
+        if (subjectElement == null) {
+            return false;
+        }
+        return true;
+    }
+
+    private WebElement waitAndGetElement(By byElement) {
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, 30);
+            wait.pollingEvery(Duration.ofSeconds(1));
+            wait.until(ExpectedConditions.presenceOfElementLocated(byElement));
+            return driver.findElement(byElement);
+        }
+        catch (TimeoutException e) {
+            return null;
+        }
     }
 
     public boolean checkEmail(String user, String passwd, String topic) {
         GmailLogin gmailPage = new GmailLogin();
         gmailPage.login(user, passwd);
 
-        WebDriverWait explicitWait = new WebDriverWait(driver, 3);
+        WebDriverWait explicitWait = new WebDriverWait(driver, 10);
         explicitWait.pollingEvery(Duration.ofSeconds(1));
         explicitWait.until(ExpectedConditions.visibilityOf(gmailLogo));
+
         refreshButton.click();
 
         String xpath = String.format("//span[contains(text(), '%s')]", topic);
@@ -85,5 +113,51 @@ public class GmailSendEmail {
         return result;
     }
 
+    public boolean checkSentFolder(String user, String passwd, String topic) {
+        sentTab.click();
+
+        String xpath = String.format("//span[contains(text(), '%s')]", topic);
+        boolean result = false;
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, 30);
+            wait.pollingEvery(Duration.ofSeconds(1));
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpath)));
+            result = true;
+        }
+        catch (TimeoutException e) {
+            result = false;
+        }
+
+        GmailLogout a = new GmailLogout();
+        a.logout();
+
+        return result;
+    }
+
+    public boolean deleteEmail(String user, String passwd, String topic) {
+        GmailLogin gmailPage = new GmailLogin();
+        gmailPage.login(user, passwd);
+
+        refreshButton.click();
+
+        String xpath = String.format("//span[contains(text(), '%s')]/ancestor::tr", topic);
+        By by = By.xpath(xpath);
+        WebElement subjectElement =  waitAndGetElement(by);
+        if (subjectElement == null) {
+            return false;
+        }
+        subjectElement.click();
+        deleteButton.click();
+        return true;
+    }
+
+    public boolean checkTrashFolder(String user, String passwd, String topic) {
+        trashTab.click();
+        boolean result = waitAndCheckEmail(topic);
+
+        GmailLogout a = new GmailLogout();
+        a.logout();
+        return result;
+    }
 }
 

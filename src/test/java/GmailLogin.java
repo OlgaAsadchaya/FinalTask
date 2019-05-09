@@ -21,7 +21,6 @@ public class GmailLogin{
     @FindBy(css = "[name=password]")
     private WebElement passwordField;
 
-    //@FindBy(xpath = "//*[contains(@class,'ZFr60d CeoRYc')] ")
     @FindBy(xpath = "//*[@id=\"passwordNext\"]")
     private WebElement nextButton2;
 
@@ -34,7 +33,7 @@ public class GmailLogin{
     @FindBy(xpath = "//*[@class=\"gb_ma\"]")
     private WebElement gmailLogo;
 
-    private final String url = "https://gmail.com";
+    private final String url = "https://accounts.google.com/signin/v2/identifier?service=mail&passive=true&rm=false&continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&ss=1&scc=1&ltmpl=default&ltmplcache=2&emr=1&osid=1&flowName=GlifWebSignIn&flowEntry=ServiceLogin";
     private String userName;
 
     public GmailLogin() {
@@ -48,7 +47,7 @@ public class GmailLogin{
         emailField.sendKeys(user);
         nextButton.click();
 
-        WebDriverWait explicitWait = new WebDriverWait(driver, 5);
+        WebDriverWait explicitWait = new WebDriverWait(driver, 10);
         explicitWait.pollingEvery(Duration.ofSeconds(1));
         explicitWait.until(ExpectedConditions.visibilityOf(passwordField));
 

@@ -3,6 +3,7 @@ import io.qameta.allure.Description;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 
@@ -30,8 +31,8 @@ public class GmailSendEmailTest {
         SingletonBrowserClass.init(url, browser, version, os, userName, accessKey);
     }
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void beforeEach() {
         driver.manage().deleteAllCookies();
     }
 
@@ -49,6 +50,39 @@ public class GmailSendEmailTest {
 
         GmailSendEmail gmail = new GmailSendEmail();
         gmail.sendEmail(login, password, uniqTopic, login2);
+
+        GmailLogout a = new GmailLogout();
+        a.logout();
+
         assertTrue(gmail.checkEmail(login2, password2, uniqTopic));
+    }
+
+    @Description("Verify that sent email appears in Sent Mail folder")
+    @AllureId("GM-4")
+    @Test
+    public void testSendEmail2() {
+        int rnd = (int )(Math.random() * 10000 + 1);
+        String uniqTopic = Integer.toString(rnd);
+
+        GmailSendEmail gmail = new GmailSendEmail();
+        gmail.sendEmail(login, password, uniqTopic, login2);
+        assertTrue(gmail.checkSentFolder(login, password, uniqTopic));
+    }
+
+    @Description("Verify that deleted email is listed in Trash")
+    @AllureId("GM-5")
+    @Test
+    public void testDeletedEmail() {
+        int rnd = (int )(Math.random() * 10000 + 1);
+        String uniqTopic = Integer.toString(rnd);
+
+        GmailSendEmail gmail = new GmailSendEmail();
+        gmail.sendEmail(login, password, uniqTopic, login2);
+
+        GmailLogout a = new GmailLogout();
+        a.logout();
+
+        gmail.deleteEmail(login2, password2, uniqTopic);
+        assertTrue(gmail.checkTrashFolder(login2, password2, uniqTopic));
     }
 }

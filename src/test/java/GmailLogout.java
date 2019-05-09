@@ -14,7 +14,7 @@ public class GmailLogout {
     @FindBy(xpath = "//*[contains(@class,'gb_ya gbii')]")
     private WebElement userInfoSign;
 
-    @FindBy(xpath = "//*[contains(@class,'gb_0 gb_Ff gb_Nf gb_me gb_kb')]")
+    @FindBy(xpath = "//a[contains(@class,'gb_0 gb_Af gb_If gb_ke gb_kb')]")
     private WebElement userInfoPopupLogoutButton;
 
     @FindBy(xpath = "//*[@id=\"headingText\"]/content")
